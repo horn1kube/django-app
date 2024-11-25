@@ -1,0 +1,12 @@
+{% extends 'events/base.html' %}
+
+{% block content %}
+    <h1>Добавить участника для события: {{ event.title }}</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Добавить</button>
+        <a href="{% url 'event_participants' event.id %}" class="btn btn-secondary">Отмена</a>
+    </form>
+{% endblock %}
