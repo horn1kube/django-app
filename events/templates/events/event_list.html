@@ -1,0 +1,171 @@
+{% extends 'events/base.html' %}
+
+{% block content %}
+    <a href="{% url 'event_register_participant' %}" class="btn btn-success btn-lg"
+       title="Регистрация на событие">
+        <i class="fa fa-user-plus"></i> Регистрация
+    </a>
+
+    <br><br>
+
+    <h1>Список событий</h1>
+
+    <div class="mb-3">
+        <h4>Статистика по статусам:</h4>
+        <ul>
+            {% for status_stat in status_counts %}
+                <li>
+                    <a href="?status={{ status_stat.status_internal }}&title={{ title }}&location={{ location }}&start_datetime={{ start_datetime }}&page=1"
+                       class="{% if status_stat.status_internal == current_status %}text-bold{% endif %}">
+                        {{ status_stat.status }} ({{ status_stat.count }})
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+
+    <!-- Форма для фильтрации -->
+    <form method="get" class="mb-3">
+        <div class="row">
+            <div class="col-md-3">
+                <label for="title">Название</label>
+                <input type="text" id="title" name="title" class="form-control" value="{{ title }}"
+                       placeholder="Поиск по названию">
+            </div>
+            <div class="col-md-3">
+                <label for="location">Локация</label>
+                <input type="text" id="location" name="location" class="form-control" value="{{ location }}"
+                       placeholder="Поиск по локации">
+            </div>
+            <div class="col-md-2">
+                <label for="status">Статус</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="">Все</option>
+                    <option value="planned" {% if status == 'planned' %}selected{% endif %}>Запланировано</option>
+                    <option value="in_progress" {% if status == 'in_progress' %}selected{% endif %}>В процессе</option>
+                    <option value="completed" {% if status == 'completed' %}selected{% endif %}>Завершено</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="start_datetime">Дата начала</label>
+                <input type="datetime-local" id="start_datetime" name="start_datetime" class="form-control"
+                       value="{{ start_datetime }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary mt-4">Фильтровать</button>
+            </div>
+        </div>
+    </form>
+
+    <a href="{% url 'event_list' %}" class="btn btn-secondary mb-3">Сбросить фильтры</a>
+
+
+    <!-- Кнопка для перехода на страницу создания события -->
+    <a href="{% url 'event_create' %}" class="btn btn-primary mb-3">
+        Создать событие
+    </a>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>
+                <a href="?sort_field=title&sort_order={% if sort_field == 'title' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    Название
+                    {% if sort_field == 'title' %}
+                        {% if sort_order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% endif %}
+                </a></th>
+            <th>
+                <a href="?sort_field=start_datetime&sort_order={% if sort_field == 'start_datetime' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    Дата начала
+                    {% if sort_field == 'start_datetime' %}
+                        {% if sort_order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% endif %}
+                </a></th>
+            <th>
+                <a href="?sort_field=end_datetime&sort_order={% if sort_field == 'end_datetime' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    Дата окончания
+                    {% if sort_field == 'end_datetime' %}
+                        {% if sort_order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% endif %}
+                </a></th>
+            <th>
+                <a href="?sort_field=status&sort_order={% if sort_field == 'status' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    Статус
+                    {% if sort_field == 'status' %}
+                        {% if sort_order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% endif %}
+                </a></th>
+            <th>
+                <a href="?sort_field=participant_count&sort_order={% if sort_field == 'participant_count' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    Количество участников
+                    {% if sort_field == 'participant_count' %}
+                        {% if sort_order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% endif %}
+                </a></th>
+            <th>
+                <a href="?sort_field=updated_at&sort_order={% if sort_field == 'updated_at' and sort_order == 'asc' %}desc{% else %}asc{% endif %}">
+                    Дата последнего изменения
+                    {% if sort_field == 'updated_at' %}
+                        {% if sort_order == 'asc' %}▲{% else %}▼{% endif %}
+                    {% endif %}
+                </a>
+            </th>
+            <th>
+                <a>
+                    Действия
+                </a>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for event in page_obj %}
+            <tr>
+                <td>{{ event.title }}</td>
+                <td>{{ event.start_datetime }}</td>
+                <td>{{ event.end_datetime }}</td>
+                <td>{{ event.get_status_display }}</td>
+                <td>{{ event.participant_count }}</td>
+                <td>{{ event.updated_at }}</td>
+                <td>
+                    <a href="{% url 'event_participants' event.id %}" class="btn btn-info btn-sm"
+                       title="Управление участниками"
+                       style="margin-right: 15px;">
+                        <i class="fa fa-users"></i>
+                    </a>
+
+                    <a href="{% url 'event_edit' event.pk %}" class="btn btn-warning btn-sm" title="Редактировать">
+                        <i class="fa fa-pencil-alt"></i>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <nav>
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.previous_page_number }}&status={{ current_status }}&title={{ title }}&location={{ location }}&start_datetime={{ start_datetime }}">Назад</a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link"
+                       href="?page={{ num }}&status={{ current_status }}&title={{ title }}&location={{ location }}&start_datetime={{ start_datetime }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.next_page_number }}&status={{ current_status }}&title={{ title }}&location={{ location }}&start_datetime={{ start_datetime }}">Вперёд</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}
